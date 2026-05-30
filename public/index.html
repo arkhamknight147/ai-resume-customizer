@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Resume Customizer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ── Header ────────────────────────────────────────────────────────────── -->
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="logo">
+        <div class="logo-mark">AI</div>
+        <div class="logo-text">
+          <span class="logo-name">Resume Customizer</span>
+          <span class="logo-tag">Local App</span>
+        </div>
+      </div>
+      <div class="header-right">
+        <button class="session-clear-btn hidden" id="clearSessionBtn" title="Clear session and start over">↺ Start Over</button>
+        <div class="connection-pill" id="connectionPill">
+          <span class="dot dot--checking" id="statusDot"></span>
+          <span id="statusText">Connecting…</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ── Session restore banner ────────────────────────────────────────────── -->
+  <div class="session-banner hidden" id="sessionBanner">
+    <span>📋 You have an unfinished session.</span>
+    <button class="session-banner-btn session-banner-btn--restore" id="restoreSessionBtn">Restore it</button>
+    <button class="session-banner-btn session-banner-btn--dismiss" id="dismissSessionBtn">Start fresh</button>
+  </div>
+
+  <!-- ── Stage progress bar ────────────────────────────────────────────────── -->
+  <div class="stage-bar">
+    <div class="stage-bar-inner">
+      <div class="stage-step stage-step--done"   id="step1"><div class="step-circle">✓</div><div class="step-label">Connected</div></div>
+      <div class="step-connector step-connector--done" id="conn1"></div>
+      <div class="stage-step stage-step--active" id="step2"><div class="step-circle">2</div><div class="step-label">Upload+JD</div></div>
+      <div class="step-connector" id="conn2"></div>
+      <div class="stage-step stage-step--locked" id="step3"><div class="step-circle">3</div><div class="step-label">JD Analysis</div></div>
+      <div class="step-connector" id="conn3"></div>
+      <div class="stage-step stage-step--locked" id="step4"><div class="step-circle">4</div><div class="step-label">Role Fit</div></div>
+      <div class="step-connector" id="conn4"></div>
+      <div class="stage-step stage-step--locked" id="step5"><div class="step-circle">5</div><div class="step-label">Tailor</div></div>
+      <div class="step-connector" id="conn5"></div>
+      <div class="stage-step stage-step--locked" id="step6"><div class="step-circle">6</div><div class="step-label">Review</div></div>
+      <div class="step-connector" id="conn6"></div>
+      <div class="stage-step stage-step--locked" id="step7"><div class="step-circle">7</div><div class="step-label">Export</div></div>
+    </div>
+  </div>
+
+  <!-- ── Main ──────────────────────────────────────────────────────────────── -->
+  <main class="app-main">
+
+    <!-- ── Stage 1: Connection done ──────────────────────────────────────── -->
+    <section class="card card--done" id="connectionCard">
+      <div class="card-header card-header--compact">
+        <div class="card-badge card-badge--green">Stage 1 — Complete</div>
+        <div class="done-row">
+          <span class="done-icon">✅</span>
+          <div>
+            <p class="done-title">Claude API connected</p>
+            <p class="done-sub" id="claudeModel">Model: —</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Stage 2a: Upload Resume ───────────────────────────────────────── -->
+    <section class="card card--active" id="uploadCard">
+      <div class="card-header">
+        <div class="card-badge card-badge--blue">Stage 2 of 7 — Step A</div>
+        <h2 class="card-title">Upload Your Resume</h2>
+        <p class="card-sub">PDF or Word (.docx) — your existing resume. It stays on your machine.</p>
+      </div>
+      <div class="card-body">
+        <div class="drop-zone" id="dropZone">
+          <input type="file" id="fileInput" accept=".pdf,.docx" hidden />
+          <div class="drop-content" id="dropContent">
+            <div class="drop-icon-wrap">📄</div>
+            <p class="drop-title">Drag your resume here</p>
+            <p class="drop-sub">or <button class="link-btn" id="browseBtn">browse to upload</button></p>
+            <p class="drop-hint">PDF or DOCX · max 10 MB</p>
+          </div>
+          <div class="upload-result hidden" id="uploadResult">
+            <div class="file-info">
+              <span class="file-icon">📋</span>
+              <div class="file-details">
+                <p class="file-name" id="fileName"></p>
+                <p class="file-meta" id="fileMeta"></p>
+              </div>
+              <button class="icon-btn" id="removeFileBtn" title="Remove file">✕</button>
+            </div>
+            <div class="text-preview-wrap">
+              <p class="preview-label">Extracted text preview</p>
+              <pre class="text-preview" id="textPreview"></pre>
+            </div>
+          </div>
+          <div class="upload-loading hidden" id="uploadLoading">
+            <div class="spinner"></div>
+            <p>Reading your resume…</p>
+          </div>
+        </div>
+        <p class="field-error hidden" id="uploadError"></p>
+      </div>
+    </section>
+
+    <!-- ── Stage 2b: Job Description ─────────────────────────────────────── -->
+    <section class="card card--active" id="jdCard">
+      <div class="card-header">
+        <div class="card-badge card-badge--blue">Stage 2 of 7 — Step B</div>
+        <h2 class="card-title">Paste the Job Description</h2>
+        <p class="card-sub">Copy the full JD from Naukri, LinkedIn, or any job board and paste it below.</p>
+      </div>
+      <div class="card-body">
+        <textarea id="jdInput" class="jd-textarea"
+          placeholder="Paste the complete job description here…&#10;&#10;Include: role title, responsibilities, required skills, preferred qualifications."
+          rows="10"></textarea>
+        <div class="jd-footer">
+          <span class="char-count" id="jdCharCount">0 characters</span>
+        </div>
+        <p class="field-error hidden" id="jdError"></p>
+      </div>
+    </section>
+
+    <!-- ── Stage 2c: Your Details ───────────────────────────────────────── -->
+    <section class="card card--active" id="candidateCard">
+      <div class="card-header">
+        <div class="card-badge card-badge--blue">Stage 2 of 7 — Step C</div>
+        <h2 class="card-title">Your Details <span class="badge-optional">Optional</span></h2>
+        <p class="card-sub">Name and title appear at the top of your DOCX. Email, phone, LinkedIn and location are auto-detected from your resume.</p>
+      </div>
+      <div class="card-body">
+        <div class="cand-row">
+          <div class="cand-field">
+            <label class="cand-label" for="candName">Full Name</label>
+            <input type="text" id="candName" class="cand-input" placeholder="e.g. Nishant Kanhurkar" autocomplete="name" />
+          </div>
+          <div class="cand-field">
+            <label class="cand-label" for="candTitle">Professional Title</label>
+            <input type="text" id="candTitle" class="cand-input" placeholder="e.g. Senior Product Manager | AI &amp; B2B Platforms" />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Gateway card (dynamic CTA) ────────────────────────────────────── -->
+    <section class="card card--cta" id="gatewayCard">
+      <div class="card-body cta-body">
+        <div class="cta-info">
+          <h2 class="cta-title" id="gatewayTitle">Ready to analyse?</h2>
+          <p class="cta-sub" id="gatewaySub">Upload your resume and paste a job description above to continue.</p>
+        </div>
+        <div class="cta-buttons">
+          <button class="btn btn--primary btn--large btn--disabled" id="primaryBtn" disabled></button>
+          <button class="btn btn--secondary btn--large hidden" id="retailorBtn">↺ Tailor Again</button>
+        </div>
+      </div>
+      <div class="skip-row hidden" id="skipRow">
+        <span class="skip-divider">or</span>
+        <button class="skip-link" id="skipBtn"></button>
+      </div>
+    </section>
+
+    <!-- ── Stage 3: JD Analysis ───────────────────────────────────────────── -->
+    <section class="card card--locked" id="jdAnalysisCard">
+      <div class="card-header">
+        <div class="card-badge card-badge--grey" id="jdAnalysisBadge">Stage 3 — Optional</div>
+        <h2 class="card-title">JD Analysis</h2>
+        <p class="card-sub">What the hiring manager actually cares about — before you tailor a single word.</p>
+      </div>
+      <div class="stage-loading hidden" id="jdAnalysisLoading">
+        <div class="spinner"></div>
+        <div>
+          <p class="tailor-loading-title">Analysing the job description…</p>
+          <p class="tailor-loading-sub">Extracting priorities · ATS keywords · Standout criteria</p>
+        </div>
+      </div>
+      <p class="field-error tailor-error hidden" id="jdAnalysisError"></p>
+      <div class="analysis-output hidden" id="jdAnalysisOutput"></div>
+    </section>
+
+    <!-- ── Stage 4: Role-Fit Matrix ───────────────────────────────────────── -->
+    <section class="card card--locked" id="roleFitCard">
+      <div class="card-header">
+        <div class="card-badge card-badge--grey" id="roleFitBadge">Stage 4 — Optional</div>
+        <h2 class="card-title">Role-Fit Matrix</h2>
+        <p class="card-sub">Honest assessment of how your profile matches the JD — before you tailor.</p>
+      </div>
+      <div class="card-body hidden" id="roleFitInputArea">
+        <label class="context-label" for="additionalContext">
+          Tell Claude about yourself beyond what's in your resume
+          <span class="context-hint">Career transitions, informal leadership, side projects, domain expertise, why you want this role — anything relevant.</span>
+        </label>
+        <textarea id="additionalContext" class="jd-textarea context-textarea"
+          placeholder="Examples:&#10;• I led a 12-person team informally for 8 months but it wasn't my official title&#10;• I have deep domain expertise in fintech regulation from prior consulting work&#10;• I'm transitioning from B2B SaaS to consumer — here's why it's a natural move for me&#10;• I have a gap of 18 months where I built a startup (failed, learned a lot)"
+          rows="5"></textarea>
+        <div class="rolefit-card-actions">
+          <button class="btn btn--primary btn--large" id="generateRoleFitBtn" onclick="runRoleFit()">
+            ✦ Generate Role-Fit Matrix
+          </button>
+          <button class="skip-link" style="margin-left:4px" onclick="skipRoleFit()">Skip this step →</button>
+        </div>
+      </div>
+      <div class="stage-loading hidden" id="roleFitLoading">
+        <div class="spinner"></div>
+        <div>
+          <p class="tailor-loading-title">Generating your Role-Fit Matrix…</p>
+          <p class="tailor-loading-sub">Comparing your profile against every JD requirement · Preparing verdict</p>
+        </div>
+      </div>
+      <p class="field-error tailor-error hidden" id="roleFitError"></p>
+      <div class="rolefit-output hidden" id="roleFitOutput"></div>
+    </section>
+
+    <!-- ── Stage 5: Tailoring ─────────────────────────────────────────────── -->
+    <section class="card card--locked" id="tailoringCard">
+      <div class="card-header">
+        <div class="card-badge card-badge--grey" id="tailoringBadge">Stage 5 — Pending</div>
+        <h2 class="card-title">Tailored Bullets</h2>
+        <p class="card-sub">Every bullet rewritten to align with the JD — accept, reject, or edit each one.</p>
+      </div>
+      <div class="stage-loading hidden" id="tailorLoading">
+        <div class="spinner"></div>
+        <div>
+          <p class="tailor-loading-title">Claude is tailoring your resume…</p>
+          <p class="tailor-loading-sub">Analysing JD keywords · Rewriting bullets · 15–30 seconds</p>
+        </div>
+      </div>
+      <p class="field-error tailor-error hidden" id="tailorError"></p>
+      <div class="tailor-summary hidden" id="tailorSummary">
+        <span class="summary-chip" id="summaryChanged"></span>
+        <span class="summary-chip summary-chip--grey" id="summaryTotal"></span>
+        <span class="summary-chip summary-chip--tokens" id="summaryTokens"></span>
+      </div>
+      <div class="diff-list hidden" id="diffList"></div>
+    </section>
+
+    <!-- ── Stage 6: ATS Signal + Missing Keywords ─────────────────────────── -->
+    <section class="card card--locked" id="atsCard">
+      <div class="card-header">
+        <div class="card-badge card-badge--grey" id="atsBadge">Stage 6 — Pending</div>
+        <h2 class="card-title">ATS Readiness Signal</h2>
+        <p class="card-sub">Keyword overlap between your tailored resume and the JD. Use as a directional signal.</p>
+      </div>
+      <div class="ats-section hidden" id="atsSection">
+        <div class="ats-band">
+          <div class="ats-bar"><div class="ats-fill" id="atsFill" style="width:0%"></div></div>
+          <span class="ats-score" id="atsScore">—</span>
+          <span class="ats-label" id="atsLabel"></span>
+        </div>
+        <div class="missing-keywords-wrap hidden" id="missingKeywordsWrap">
+          <p class="missing-keywords-title">Keywords missing from your tailored resume:</p>
+          <div class="missing-keywords-list" id="missingKeywordsList"></div>
+          <p class="missing-keywords-hint">Consider weaving these in manually where truthful.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Stage 7: Export ────────────────────────────────────────────────── -->
+    <section class="card card--locked" id="exportCard">
+      <div class="card-header">
+        <div class="card-badge card-badge--grey" id="exportBadge">Stage 7 — Pending</div>
+        <h2 class="card-title">Download Your Tailored Resume</h2>
+        <p class="card-sub">Exports a clean DOCX with your accepted rewrites applied. Open in Word or Google Docs to adjust formatting.</p>
+      </div>
+      <div class="export-section hidden" id="exportSection">
+        <div class="export-summary" id="exportSummary"></div>
+        <div class="export-actions">
+          <button class="btn btn--export btn--large" id="exportBtn">⬇ Download DOCX</button>
+          <p class="export-hint">Opens in Word or Google Docs</p>
+        </div>
+        <p class="field-error hidden" id="exportError"></p>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="app-footer">
+    <p>AI Resume Customizer · Local App · Built with Claude API</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
