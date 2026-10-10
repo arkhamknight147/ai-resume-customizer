@@ -1,7 +1,7 @@
 {
   "name": "ai-resume-customizer",
   "version": "1.0.0",
-  "description": "AI Resume Customizer — Local Prototype",
+  "description": "AI-powered resume tailoring app — upload your resume, paste a JD, get Claude to rewrite every bullet for ATS and hiring manager fit, then export a clean DOCX.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
