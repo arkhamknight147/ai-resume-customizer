@@ -148,7 +148,7 @@ Copy `.env.example` to `.env` and fill in values. **Never commit `.env` — it i
 
 ## Author
 
-Built by [Nishant Kanhurkar](https://www.linkedin.com/in/nishant-kanhurkar) — Product Manager with a habit of building the tools he wishes existed.
+Built by [Nishant Kanhurkar](https://www.linkedin.com/in/nishant-kanhurkar).
 
 ---
 
